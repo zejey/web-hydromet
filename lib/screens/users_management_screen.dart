@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/admin_drawer.dart';
+import '../models/user.dart';
 import '../services/user_service.dart';
 
 class UsersScreen extends StatefulWidget {
@@ -120,7 +121,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
     try {
       setState(() => _isLoading = true);
-      final users = await UserService.instance.getUsers();
+      final users = await UserService.getUsers();
 
       if (mounted) {
         setState(() {
@@ -492,10 +493,11 @@ class _UsersScreenState extends State<UsersScreen> {
     try {
       // Check for duplicate phone number
       print('Checking duplicate phone...'); // Debug print
-      final phoneExists = await UserService.instance.phoneNumberExists(
-        _contactController.text,
-        excludeId: _editingUserId,
+      final existingUser = await UserService.getUserByPhone(
+        _contactController.text
       );
+
+      final phoneExists = existingUser != null && existingUser.id != _editingUserId; 
 
       if (phoneExists) {
         _showErrorSnackBar('This mobile number is already registered');
@@ -531,7 +533,7 @@ class _UsersScreenState extends State<UsersScreen> {
       if (_editingUserId == null) {
         // Add new user
         print('Adding new user...'); // Debug print
-        final newUserId = await UserService.instance.addUser(user);
+        final newUserId = await UserService.addUser(user);
         print('User added with ID: $newUserId'); // Debug print
 
         if (mounted) {
@@ -548,7 +550,7 @@ class _UsersScreenState extends State<UsersScreen> {
       } else {
         // Update existing user
         print('Updating existing user...'); // Debug print
-        await UserService.instance.updateUser(_editingUserId!, user);
+        await UserService.updateUser(_editingUserId!, user);
         print('User updated'); // Debug print
 
         if (mounted) {
@@ -615,7 +617,9 @@ class _UsersScreenState extends State<UsersScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                _deleteUser(user.id);
+                if (user.id != null) {
+                  _deleteUser(user.id!);
+                }
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
@@ -632,7 +636,7 @@ class _UsersScreenState extends State<UsersScreen> {
 
   Future<void> _deleteUser(String userId) async {
     try {
-      await UserService.instance.deleteUser(userId);
+      await UserService.deleteUser(userId);
       await _loadUsers();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,18 +40,18 @@ class _LoginScreenState extends State<LoginScreen> {
       final password = _passwordController.text;
 
       try {
-        final role = await AuthService.instance.loginWithUsernamePassword(
-          username: username,
+        final role = await AuthService.instance.loginWithBackend(
+          usernameOrEmail: username,
           password: password,
         );
 
         if (!mounted) return;
         switch (role) {
           case UserRole.admin:
-            Navigator.pushReplacementNamed(context, '/dashboard');
+            context.go('/dashboard');
             break;
           case UserRole.superadmin:
-            Navigator.pushReplacementNamed(context, '/superadmin-dashboard');
+            context.go('/superadmin-dashboard');    
             break;
         }
       } catch (e) {
@@ -84,9 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.8),
-                Colors.grey[900]!.withValues(alpha: 0.7),
-                Colors.black.withValues(alpha: 0.6),
+                Colors.black.withOpacity(0.8),
+                Colors.grey[900]!.withOpacity(0.7),
+                Colors.black.withOpacity(0.6),
               ],
             ),
           ),
@@ -119,12 +120,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
+                                  color: Colors.black.withOpacity(0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 6),
                                 ),
                                 BoxShadow(
-                                  color: Colors.grey.withValues(alpha: 0.2),
+                                  color: Colors.grey.withOpacity(0.2),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
                                 ),
@@ -254,7 +255,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           const SizedBox(height: 32),
-
                           SizedBox(
                             width: double.infinity,
                             height: 48,
@@ -286,36 +286,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 8),
+                          // ======= FORGOT PASSWORD TEXT BUTTON HERE =======
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => ForgotPasswordDialog(),
+                                );
+                              },
+                              child: const Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  color: Color(0xFF2d5f3f),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
 
-                          // Container(
-                          //   padding: const EdgeInsets.all(12),
-                          //   decoration: BoxDecoration(
-                          //     color: Colors.blue.shade50,
-                          //     borderRadius: BorderRadius.circular(8),
-                          //     border: Border.all(color: Colors.blue.shade200),
-                          //   ),
-                          //   // child: const Column(
-                          //   //   children: [
-                          //   //     // Text(
-                          //   //     //   'Demo Credentials:',
-                          //   //     //   style: TextStyle(
-                          //   //     //     fontWeight: FontWeight.bold,
-                          //   //     //     color: Colors.blue,
-                          //   //     //   ),
-                          //   //     // ),
-                          //   //     // SizedBox(height: 4),
-                          //   //     // Text(
-                          //   //     //   'Admin: admin / admin123\nSuperadmin: superadmin / superadmin123',
-                          //   //     //   textAlign: TextAlign.center,
-                          //   //     //   style: TextStyle(
-                          //   //     //     color: Colors.blue,
-                          //   //     //     fontSize: 12,
-                          //   //     //   ),
-                          //   //     // ),
-                          //   //   ],
-                          //   // ),
-                          // ),
+                          // (rest of your code unchanged)
                         ],
                       ),
                     ),
@@ -326,6 +321,126 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// === MODAL DIALOG WIDGET ADDED TO BOTTOM OF FILE ===
+class ForgotPasswordDialog extends StatefulWidget {
+  @override
+  State<ForgotPasswordDialog> createState() => _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  bool _loading = false;
+  String? _message;
+  String? _error;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+      _message = null;
+    });
+
+    try {
+      final response = await AuthService.instance.sendForgotPasswordEmail(
+        email: _emailController.text,
+      );
+      setState(() {
+        _message = response ?? "If this email exists, a reset link has been sent.";
+      });
+    } catch (e) {
+      setState(() {
+        _error = "Failed to request password reset. Please try again.";
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('Forgot Password'),
+      content: SizedBox(
+        width: 320,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Enter your email to receive a password reset link.",
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: "Email Address",
+                  prefixIcon: Icon(Icons.email),
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return "Please enter your email";
+                  }
+                  final emailRegex = RegExp(r"^[^@]+@[^@]+\.[^@]+");
+                  if (!emailRegex.hasMatch(val)) {
+                    return "Enter a valid email address";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              if (_error != null)
+                Text(_error!, style: const TextStyle(color: Colors.red)),
+              if (_message != null)
+                Text(
+                  _message!,
+                  style: const TextStyle(color: Colors.green),
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _loading ? null : () => Navigator.of(context).pop(),
+          child: const Text("Close"),
+        ),
+        ElevatedButton(
+          onPressed: _loading ? null : _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2d5f3f),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: _loading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+              : const Text("Send Reset Link"),
+        ),
+      ],
     );
   }
 }
