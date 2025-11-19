@@ -7,6 +7,8 @@ import '../widgets/post_category_pie_chart.dart';
 import '../widgets/system_errors_bar_chart.dart';
 import '../widgets/logins_timeline_chart.dart';
 
+import 'package:go_router/go_router.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -19,22 +21,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (index == 0) return; // Already on dashboard
     switch (index) {
       case 1:
-        Navigator.pushReplacementNamed(context, '/users');
+        context.go('/users');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/notifications');
+        context.go('/notifications');
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/settings');
+        context.go('/settings');
         break;
       case 4:
-        Navigator.pushReplacementNamed(context, '/admin-system-logs');
+        context.go('/admin-system-logs');
         break;
     }
   }
 
   void _onLogout() {
-    Navigator.pushReplacementNamed(context, '/login');
+   context.go('/login');
   }
 
   @override
@@ -525,63 +527,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _navigateToSection(String label, String action) {
+    // Replace Navigator.* with go_router navigation
     if (label == 'Admin') {
       // Always show the admin management screen, and show the add modal if 'add'
-      Navigator.pushNamed(
-        context,
-        '/admins',
-        arguments: action == 'add' ? {'showAddUser': true} : null,
-      );
+      if (action == 'add') {
+        context.go('/admins?showAddUser=true');
+      } else {
+        context.go('/admins');
+      }
     } else if (label == 'Users') {
       if (action == 'view') {
-        Navigator.pushNamed(context, '/users');
+        context.go('/users');
       } else if (action == 'add') {
-        Navigator.pushNamed(
-          context,
-          '/users',
-          arguments: {'showAddUser': true},
-        );
+        context.go('/users?showAddUser=true');
       }
     } else if (label == 'Emergency Hotlines') {
       if (action == 'view') {
-        Navigator.pushReplacementNamed(
-          context,
-          '/settings',
-          arguments: {'showHotlines': true},
-        );
+        context.go('/settings?showHotlines=true');
       } else if (action == 'add') {
-        Navigator.pushReplacementNamed(
-          context,
-          '/settings',
-          arguments: {'showHotlines': true, 'addHotline': true},
-        );
+        context.go('/settings?showHotlines=true&addHotline=true');
       }
     } else if (label == 'Alerts') {
       if (action == 'view') {
-        Navigator.pushNamed(context, '/notifications');
+        context.go('/notifications');
       } else if (action == 'add') {
-        Navigator.pushNamed(
-          context,
-          '/notifications',
-          arguments: {'showAddAlert': true},
-        );
+        context.go('/notifications?showAddAlert=true');
       }
     } else if (label == 'Emergency Response Teams') {
       if (action == 'view') {
-        Navigator.pushNamed(
-          context,
-          '/users',
-          arguments: {'filterRole': 'Emergency Responder'},
-        );
+        context.go('/users?filterRole=Emergency%20Responder');
       } else if (action == 'add') {
-        Navigator.pushNamed(
-          context,
-          '/users',
-          arguments: {
-            'showAddUser': true,
-            'preselectRole': 'Emergency Responder',
-          },
-        );
+        context.go('/users?showAddUser=true&preselectRole=Emergency%20Responder');
       }
     }
   }

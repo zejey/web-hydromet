@@ -7,6 +7,7 @@ import '../widgets/post_category_pie_chart.dart';
 import '../widgets/system_errors_bar_chart.dart';
 import '../widgets/logins_timeline_chart.dart';
 import 'users_management_screen.dart';
+import 'go_router'
 
 class SuperAdminDashboardScreen extends StatefulWidget {
   const SuperAdminDashboardScreen({super.key});
@@ -29,56 +30,30 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
 
   void _onDrawerItemSelected(int index) {
     if (index == 0) {
-      Navigator.pushReplacementNamed(
-        context,
-        '/superadmin-dashboard',
-        arguments: {'role': 'superadmin'},
-      );
+      context.go('/superadmin-dashboard?role=superadmin');
       return;
     }
     switch (index) {
       case 1:
-        Navigator.pushReplacementNamed(
-          context,
-          '/admins',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/admins?role=superadmin');
         break;
       case 2:
-        Navigator.pushReplacementNamed(
-          context,
-          '/superadmin-notifications',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/superadmin-notifications?role=superadmin');
         break;
       case 3:
-        Navigator.pushReplacementNamed(
-          context,
-          '/superadmin-settings',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/superadmin-settings?role=superadmin');
         break;
       case 4:
-        Navigator.pushReplacementNamed(
-          context,
-          '/superadmin-system-logs',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/superadmin-system-logs?role=superadmin');
         break;
       case 5:
-        Navigator.pushReplacementNamed(
-          context,
-          '/users',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/users?role=superadmin');
         break;
     }
   }
-
   void _onLogout() {
-    Navigator.pushReplacementNamed(context, '/login');
+    context.go('/login');
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -556,70 +531,31 @@ class _SuperAdminDashboardScreenState extends State<SuperAdminDashboardScreen> {
     );
   }
 
-  void _navigateToSection(String label, String action) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    final isSuperadmin = args is Map && args['role'] == 'superadmin';
+ void _navigateToSection(String label, String action) {
+    // We'll use context.go with query params instead of Navigator
     if (label == 'Admins') {
       if (action == 'view') {
-        Navigator.pushNamed(
-          context,
-          '/admins',
-          arguments: isSuperadmin ? {'role': 'superadmin'} : null,
-        );
+        context.go('/admins?role=superadmin');
       } else if (action == 'add') {
-        Navigator.pushNamed(
-          context,
-          '/admins',
-          arguments: {'showAddAdmin': true, 'role': 'superadmin'},
-        );
+        context.go('/admins?role=superadmin&showAddAdmin=true');
       }
     } else if (label == 'Emergency Hotlines') {
       if (action == 'view') {
-        Navigator.pushNamed(
-          context,
-          '/superadmin-settings',
-          arguments: {'showHotlines': true, 'role': 'superadmin'},
-        );
+        context.go('/superadmin-settings?role=superadmin&showHotlines=true');
       } else if (action == 'add') {
-        Navigator.pushNamed(
-          context,
-          '/superadmin-settings',
-          arguments: {
-            'showHotlines': true,
-            'addHotline': true,
-            'role': 'superadmin',
-          },
-        );
+        context.go('/superadmin-settings?role=superadmin&showHotlines=true&addHotline=true');
       }
     } else if (label == 'Alerts') {
       if (action == 'view') {
-        Navigator.pushNamed(
-          context,
-          isSuperadmin ? '/superadmin-notifications' : '/notifications',
-          arguments: isSuperadmin ? {'role': 'superadmin'} : null,
-        );
+        context.go('/superadmin-notifications?role=superadmin');
       } else if (action == 'add') {
-        Navigator.pushNamed(
-          context,
-          isSuperadmin ? '/superadmin-notifications' : '/notifications',
-          arguments: isSuperadmin
-              ? {'showAddAlert': true, 'role': 'superadmin'}
-              : {'showAddAlert': true},
-        );
+        context.go('/superadmin-notifications?role=superadmin&showAddAlert=true');
       }
     } else if (label == 'Users') {
       if (action == 'view') {
-        Navigator.pushNamed(
-          context,
-          '/users',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/users?role=superadmin');
       } else if (action == 'add') {
-        Navigator.pushNamed(
-          context,
-          '/users',
-          arguments: {'showAddUser': true, 'role': 'superadmin'},
-        );
+        context.go('/users?role=superadmin&showAddUser=true');
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:go_router/go_router.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String? token;
@@ -107,7 +108,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           backgroundColor: const Color(0xFF13b464),
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                        onPressed: () => context.go('/login'),
                         label: const Text("Go to Login"),
                       ),
                     ],

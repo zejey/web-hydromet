@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/admin_drawer.dart';
+import 'package:go_router/go_router.dart';
 
 class AdminSystemLogsScreen extends StatefulWidget {
   const AdminSystemLogsScreen({super.key});
@@ -14,22 +15,22 @@ class _AdminSystemLogsScreenState extends State<AdminSystemLogsScreen> {
     Navigator.of(context).pop(); // Close the drawer first
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/dashboard');
+       context.go('/dashboard');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/users');
+        context.go('/users');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/notifications');
+      context.go('/notifications');
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/settings');
+        context.go('/settings');
         break;
     }
   }
 
   void _onLogout() {
-    Navigator.pushReplacementNamed(context, '/login');
+    context.go('/login');
   }
 
   // Comprehensive sample log data combining both versions

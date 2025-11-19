@@ -3,6 +3,7 @@ import '../models/notification.dart';
 import 'package:intl/intl.dart';
 import '../widgets/admin_drawer.dart';
 import '../services/notification_service.dart';
+import 'package:go_router/go_router.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -49,22 +50,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (index == 2) return; // Already on Post Notification
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/dashboard');
+        context.go('/dashboard');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/users');
+        context.go('/users');
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/settings');
+        context.go('/settings');
         break;
       case 4:
-        Navigator.pushReplacementNamed(context, '/system-logs');
+        context.go('/system-logs');
         break;
     }
   }
 
   void _onLogout() {
-    Navigator.pushReplacementNamed(context, '/login');
+    context.go('/login');
   }
 
   final _formKey = GlobalKey<FormState>();

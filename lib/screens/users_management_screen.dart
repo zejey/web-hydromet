@@ -4,6 +4,8 @@ import '../widgets/admin_drawer.dart';
 import '../models/user.dart';
 import '../services/user_service.dart';
 
+import 'package:go_router/go_router.dart'; // <-- Import go_router
+
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
 
@@ -13,11 +15,7 @@ class UsersScreen extends StatefulWidget {
 
 class _UsersScreenState extends State<UsersScreen> {
   void _navigateToSuperadminDashboard() {
-    Navigator.pushReplacementNamed(
-      context,
-      '/superadmin-dashboard',
-      arguments: {'role': 'superadmin'},
-    );
+    context.go('/superadmin-dashboard?role=superadmin');
   }
 
   final List<String> _barangays = [
@@ -735,90 +733,46 @@ class _UsersScreenState extends State<UsersScreen> {
           final isSuperadmin = args is Map && args['role'] == 'superadmin';
 
           if (isSuperadmin) {
-            switch (index) {
-              case 0:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/superadmin-dashboard',
-                  arguments: {'role': 'superadmin'},
-                );
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/admins',
-                  arguments: {'role': 'superadmin'},
-                );
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/superadmin-notifications',
-                  arguments: {'role': 'superadmin'},
-                );
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/superadmin-settings',
-                  arguments: {'role': 'superadmin'},
-                );
-                break;
-              case 4:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/superadmin-system-logs',
-                  arguments: {'role': 'superadmin'},
-                );
-                break;
-              case 5:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/users',
-                  arguments: {'role': 'superadmin'},
-                );
-                break;
-            }
-          } else {
-            switch (index) {
-              case 0:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/dashboard',
-                  arguments: {'role': 'admin'},
-                );
-                break;
-              case 1:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/users',
-                  arguments: {'role': 'admin'},
-                );
-                break;
-              case 2:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/notifications',
-                  arguments: {'role': 'admin'},
-                );
-                break;
-              case 3:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/settings',
-                  arguments: {'role': 'admin'},
-                );
-                break;
-              case 4:
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/system-logs',
-                  arguments: {'role': 'admin'},
-                );
-                break;
-            }
-          }
-        },
+              switch (index) {
+                case 0:
+                  context.go('/superadmin-dashboard?role=superadmin');
+                  break;
+                case 1:
+                  context.go('/admins?role=superadmin');
+                  break;
+                case 2:
+                  context.go('/superadmin-notifications?role=superadmin');
+                  break;
+                case 3:
+                  context.go('/superadmin-settings?role=superadmin');
+                  break;
+                case 4:
+                  context.go('/superadmin-system-logs?role=superadmin');
+                  break;
+                case 5:
+                  context.go('/users?role=superadmin');
+                  break;
+              }
+            } else {
+              switch (index) {
+                case 0:
+                  context.go('/dashboard?role=admin');
+                  break;
+                case 1:
+                  context.go('/users?role=admin');
+                  break;
+                case 2:
+                  context.go('/notifications?role=admin');
+                  break;
+                case 3:
+                  context.go('/settings?role=admin');
+                  break;
+                case 4:
+                  context.go('/system-logs?role=admin');
+                  break;
+              }
+            }       
+          },
         onLogout: () {
           Navigator.pushReplacementNamed(context, '/login');
         },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/admin_drawer.dart';
 import '../widgets/emergency_hotlines_panel.dart';
 import '../widgets/safety_tips_and_measures_panel.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -608,22 +609,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       drawer: AdminDrawer(
         selectedIndex: 3,
         onLogout: () {
-          Navigator.pushReplacementNamed(context, '/login');
+         context.go('/login');
         },
         onItemSelected: (index) {
           if (index == 3) return; // Already on Settings
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/dashboard');
+              context.go('/dashboard');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/users');
+              context.go('/users');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/notifications');
+              context.go('/notifications');
               break;
             case 4:
-              Navigator.pushReplacementNamed(context, '/admin-system-logs');
+              context.go('/admin-system-logs');
               break;
           }
         },

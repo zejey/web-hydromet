@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/admin_drawer.dart';
 import 'package:flutter/services.dart';
 import '../services/admin_management_service.dart';
+import 'package:go_router/go_router.dart';
 
 class AdminManagementScreen extends StatefulWidget {
   final String role;
@@ -410,59 +411,34 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
           switch (index) {
             case 0:
               if (widget.role == 'superadmin') {
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/superadmin-dashboard',
-                  arguments: {'role': 'superadmin'},
-                );
+                context.go('/superadmin-dashboard?role=superadmin');
               } else {
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/dashboard',
-                  arguments: {'role': widget.role},
-                );
+                context.go('/dashboard?role=${widget.role}');
               }
               break;
             case 1:
-              Navigator.pushReplacementNamed(
-                context,
-                '/admins',
-                arguments: {'role': widget.role},
-              );
+              context.go('/admins?role=${widget.role}');
               break;
             case 2:
-              Navigator.pushReplacementNamed(
-                context,
-                widget.role == 'superadmin'
-                    ? '/superadmin-notifications'
-                    : '/notifications',
-                arguments: {'role': widget.role},
-              );
+              if (widget.role == 'superadmin') {
+                context.go('/superadmin-notifications?role=superadmin');
+              } else {
+                context.go('/notifications?role=${widget.role}');
+              }
               break;
             case 3:
-              Navigator.pushReplacementNamed(
-                context,
-                '/superadmin-settings',
-                arguments: {'role': widget.role},
-              );
+              context.go('/superadmin-settings?role=${widget.role}');
               break;
             case 4:
-              Navigator.pushReplacementNamed(
-                context,
-                '/superadmin-system-logs',
-                arguments: {'role': widget.role},
-              );
+              context.go('/superadmin-system-logs?role=${widget.role}');
               break;
             case 5:
-              Navigator.pushReplacementNamed(
-                context,
-                '/users',
-                arguments: {'role': widget.role},
-              );
+              context.go('/users?role=${widget.role}');
+              break;
           }
         },
         onLogout: () {
-          Navigator.pushReplacementNamed(context, '/login');
+          context.go('/login');
         },
       ),
       appBar: PreferredSize(

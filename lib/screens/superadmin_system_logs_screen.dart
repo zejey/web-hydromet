@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/admin_drawer.dart';
+import 'package:go_router/go_router.dart';
 
 class SuperAdminSystemLogsScreen extends StatefulWidget {
   const SuperAdminSystemLogsScreen({super.key});
@@ -15,96 +16,52 @@ class _SuperAdminSystemLogsScreenState
     final args = ModalRoute.of(context)?.settings.arguments;
     final isSuperadmin = args is Map && args['role'] == 'superadmin';
 
-    if (isSuperadmin) {
+      if (isSuperadmin) {
       // Superadmin drawer: [0:Dashboard, 1:AdminMgmt, 2:Notif, 3:Settings, 4:SystemLogs, 5:UserMgmt]
       switch (index) {
         case 0:
-          Navigator.pushReplacementNamed(
-            context,
-            '/superadmin-dashboard',
-            arguments: {'role': 'superadmin'},
-          );
+          context.go('/superadmin-dashboard?role=superadmin');
           break;
         case 1:
-          Navigator.pushReplacementNamed(
-            context,
-            '/admins',
-            arguments: {'role': 'superadmin'},
-          );
+          context.go('/admins?role=superadmin');
           break;
         case 2:
-          Navigator.pushReplacementNamed(
-            context,
-            '/superadmin-notifications',
-            arguments: {'role': 'superadmin'},
-          );
+          context.go('/superadmin-notifications?role=superadmin');
           break;
         case 3:
-          Navigator.pushReplacementNamed(
-            context,
-            '/superadmin-settings',
-            arguments: {'role': 'superadmin'},
-          );
+          context.go('/superadmin-settings?role=superadmin');
           break;
         case 4:
-          Navigator.pushReplacementNamed(
-            context,
-            '/superadmin-system-logs',
-            arguments: {'role': 'superadmin'},
-          );
+          context.go('/superadmin-system-logs?role=superadmin');
           break;
         case 5:
-          Navigator.pushReplacementNamed(
-            context,
-            '/users',
-            arguments: {'role': 'superadmin'},
-          );
+          context.go('/users?role=superadmin');
           break;
       }
     } else {
       // Admin drawer: [0:Dashboard, 1:UserMgmt, 2:Notif, 3:Settings, 4:SystemLogs]
       switch (index) {
         case 0:
-          Navigator.pushReplacementNamed(
-            context,
-            '/dashboard',
-            arguments: {'role': 'admin'},
-          );
+          context.go('/dashboard?role=admin');
           break;
         case 1:
-          Navigator.pushReplacementNamed(
-            context,
-            '/users',
-            arguments: {'role': 'admin'},
-          );
+          context.go('/users?role=admin');
           break;
         case 2:
-          Navigator.pushReplacementNamed(
-            context,
-            '/notifications',
-            arguments: {'role': 'admin'},
-          );
+          context.go('/notifications?role=admin');
           break;
         case 3:
-          Navigator.pushReplacementNamed(
-            context,
-            '/settings',
-            arguments: {'role': 'admin'},
-          );
+          context.go('/settings?role=admin');
           break;
         case 4:
-          Navigator.pushReplacementNamed(
-            context,
-            '/system-logs',
-            arguments: {'role': 'admin'},
-          );
+          context.go('/system-logs?role=admin');
           break;
       }
     }
   }
 
   void _onLogout() {
-    Navigator.pushReplacementNamed(context, '/login');
+    context.go('/login');
   }
 
   // Comprehensive sample log data combining both versions

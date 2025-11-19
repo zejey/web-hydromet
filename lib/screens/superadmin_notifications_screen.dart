@@ -3,6 +3,7 @@ import '../models/notification.dart';
 import 'package:intl/intl.dart';
 import '../widgets/admin_drawer.dart';
 import '../services/notification_service.dart';
+import 'package:go_router/go_router.dart';
 
 class SuperAdminNotificationsScreen extends StatefulWidget {
   const SuperAdminNotificationsScreen({super.key});
@@ -50,38 +51,22 @@ class _SuperAdminNotificationsScreenState
     if (index == 2) return; // Already on Post Notification
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(
-          context,
-          '/superadmin-dashboard',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/superadmin-dashboard?role=superadmin');
         break;
       case 1:
-        Navigator.pushReplacementNamed(
-          context,
-          '/admins',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/admins?role=superadmin');
         break;
       case 3:
-        Navigator.pushReplacementNamed(
-          context,
-          '/settings',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/settings?role=superadmin');
         break;
       case 4:
-        Navigator.pushReplacementNamed(
-          context,
-          '/superadmin-system-logs',
-          arguments: {'role': 'superadmin'},
-        );
+        context.go('/superadmin-system-logs?role=superadmin');
         break;
     }
   }
 
   void _onLogout() {
-    Navigator.pushReplacementNamed(context, '/login');
+      context.go('/login');
   }
 
   final _formKey = GlobalKey<FormState>();

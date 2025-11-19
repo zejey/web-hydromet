@@ -557,52 +557,29 @@ class _SuperadminSettingsScreenState extends State<SuperadminSettingsScreen> {
         selectedIndex: 3,
         role: 'superadmin',
         onLogout: () {
-          Navigator.pushReplacementNamed(context, '/login');
+          context.go('/login');
         },
+        
         onItemSelected: (index) {
           if (index == 3) return; // Already on Settings
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(
-                context,
-                '/superadmin-dashboard',
-                arguments: {'role': 'superadmin'},
-              );
+              context.go('/superadmin-dashboard?role=superadmin');
               break;
             case 1:
-              Navigator.pushReplacementNamed(
-                context,
-                '/admins',
-                arguments: {'role': 'superadmin'},
-              );
+              context.go('/admins?role=superadmin');
               break;
             case 2:
-              Navigator.pushReplacementNamed(
-                context,
-                '/superadmin-notifications',
-                arguments: {'role': 'superadmin'},
-              );
+              context.go('/superadmin-notifications?role=superadmin');
               break;
             case 3:
-              Navigator.pushReplacementNamed(
-                context,
-                '/superadmin-settings',
-                arguments: {'role': 'superadmin'},
-              );
+              context.go('/superadmin-settings?role=superadmin');
               break;
             case 4:
-              Navigator.pushReplacementNamed(
-                context,
-                '/superadmin-system-logs',
-                arguments: {'role': 'superadmin'},
-              );
+              context.go('/superadmin-system-logs?role=superadmin');
               break;
             case 5:
-              Navigator.pushReplacementNamed(
-                context,
-                '/users',
-                arguments: {'role': 'superadmin'},
-              );
+              context.go('/users?role=superadmin');
               break;
           }
         },
