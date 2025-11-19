@@ -66,14 +66,10 @@ class AuthService {
       body: jsonEncode(body),
     );
 
-    print('LOGIN statusCode: ${response.statusCode}');
-    print('LOGIN response: ${response.body}');
-
+   
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print('LOGIN decoded data: $data'); 
       final token = data['access_token'];
-      print('LOGIN access_token: $token');
       await _secureStorage.write(key: 'jwt_token', value: token);
 
       // Optionally decode JWT to get role
