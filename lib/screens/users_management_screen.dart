@@ -774,7 +774,7 @@ class _UsersScreenState extends State<UsersScreen> {
             }       
           },
         onLogout: () {
-          Navigator.pushReplacementNamed(context, '/login');
+          context.go('/login');
         },
       ),
       appBar: PreferredSize(
