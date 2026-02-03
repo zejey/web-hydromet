@@ -79,7 +79,6 @@ class AuthService {
         if (parts.length != 3) throw Exception("Bad JWT format");
         final payloadRaw = base64.normalize(parts[1]);
         final payload = json.decode(utf8.decode(base64Url.decode(payloadRaw)));
-        print('LOGIN JWT payload: $payload');  // PRINT the JWT payload
         if (payload.containsKey('role')) {
           final roleStr = payload['role'] as String;
           role = switch (roleStr.toLowerCase()) {
@@ -107,17 +106,69 @@ class AuthService {
     await _secureStorage.delete(key: 'jwt_token');
   }
 
+  // ---------------- New: Password reset / forgot-password ----------------
+
+  /// Requests a password reset email for the given address.
+  /// Backend endpoint: POST /api/auth/forgot-password
+  /// Returns the server message on success (or throws Exception on failure).
   Future<String?> sendForgotPasswordEmail({required String email}) async {
+    final url = Uri.parse('$_backendBase/api/auth/forgot-password');
+    final body = json.encode({'email': email.trim().toLowerCase()});
+
     final response = await http.post(
-      Uri.parse('https://your-backend.com/api/admins/forgot-password'),
+      url,
       headers: {'Content-Type': 'application/json'},
-      body: '{"email":"$email"}',
+      body: body,
     );
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['msg'];
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      try {
+        final data = jsonDecode(response.body);
+        // backend might use 'message' or 'msg' or similar
+        return data['message']?.toString() ?? data['msg']?.toString() ?? 'If this email exists, a reset link has been sent.';
+      } catch (_) {
+        return 'If this email exists, a reset link has been sent.';
+      }
     } else {
-      throw Exception("Failed to send reset request");
+      // try to surface a helpful error
+      try {
+        final data = jsonDecode(response.body);
+        final err = data['detail'] ?? data['message'] ?? data['error'] ?? response.body;
+        throw Exception(err.toString());
+      } catch (_) {
+        throw Exception('Failed to request password reset (${response.statusCode})');
+      }
+    }
+  }
+
+  /// Completes a password reset using token and new password.
+  /// Backend endpoint: POST /api/auth/reset-password
+  /// Returns server message on success.
+  Future<String?> resetPassword({required String token, required String password}) async {
+    final url = Uri.parse('$_backendBase/api/auth/reset-password');
+    final body = json.encode({'token': token, 'password': password});
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      try {
+        final data = jsonDecode(response.body);
+        return data['message']?.toString() ?? data['msg']?.toString() ?? 'Password has been reset.';
+      } catch (_) {
+        return 'Password has been reset.';
+      }
+    } else {
+      try {
+        final data = jsonDecode(response.body);
+        final err = data['detail'] ?? data['message'] ?? data['error'] ?? response.body;
+        throw Exception(err.toString());
+      } catch (_) {
+        throw Exception('Failed to reset password (${response.statusCode})');
+      }
     }
   }
 

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 class ResetPasswordScreen extends StatefulWidget {
   final String? token;
 
-  const ResetPasswordScreen({Key? key, required this.token}) : super(key: key);
+  const ResetPasswordScreen({Key? key, this.token}) : super(key: key);
 
   @override
   _ResetPasswordScreenState createState() => _ResetPasswordScreenState();
@@ -21,30 +21,89 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   bool _success = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  String? _token;
+
+  static const String _backendBase = 'https://caring-kindness-production.up.railway.app';
+
+  @override
+  void initState() {
+    super.initState();
+    _extractToken();
+  }
+
+  void _extractToken() {
+    // First try widget.token (from GoRouter)
+    if (widget.token != null && widget.token!.isNotEmpty) {
+      setState(() => _token = widget.token);
+      return;
+    }
+
+    // Check normal query params
+    final qp = Uri.base.queryParameters;
+    if (qp['token'] != null && qp['token']!.isNotEmpty) {
+      setState(() => _token = qp['token']);
+      return;
+    }
+
+    // Check fragment (for hash routing like /#/reset-password?token=...)
+    final frag = Uri.base.fragment;
+    if (frag.isNotEmpty) {
+      try {
+        final normalized = frag.startsWith('/') ? frag.substring(1) : frag;
+        final fragUri = Uri.parse(normalized);
+        final token = fragUri.queryParameters['token'];
+        if (token != null && token.isNotEmpty) {
+          setState(() => _token = token);
+        }
+      } catch (_) {
+        // Ignore parse errors
+      }
+    }
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    
+    if (_token == null || _token!.isEmpty) {
+      setState(() {
+        _errorMessage = 'Missing reset token. Open the link from your email.';
+      });
+      return;
+    }
+
     setState(() {
       _loading = true;
       _errorMessage = '';
     });
+
     try {
+      final url = Uri.parse('$_backendBase/api/auth/reset-password');
+
+      final body = jsonEncode({
+        'token': _token,
+        'password': _password,
+      });
+
       final response = await http.post(
-        Uri.parse('https://your-backend.com/api/admins/reset-password'),
+        url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'token': widget.token,
-          'new_password': _password,
-        }),
+        body: body,
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() {
           _success = true;
         });
       } else {
+        String msg = 'Unknown error.';
+        try {
+          final data = jsonDecode(response.body);
+          msg = (data['detail'] ?? data['message'] ?? data['error'] ?? data).toString();
+        } catch (_) {
+          msg = 'Failed to reset password (${response.statusCode})';
+        }
         setState(() {
-          _errorMessage = jsonDecode(response.body)['detail'] ?? 'Unknown error.';
+          _errorMessage = msg;
         });
       }
     } catch (e) {
@@ -60,6 +119,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Success screen
     if (_success) {
       return Scaffold(
         body: Container(
@@ -93,17 +153,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, color: Color(0xFF13b464), size: 48),
+                      const Icon(Icons.check_circle, color: Color(0xFF13b464), size: 48),
                       const SizedBox(height: 20),
                       const Text(
                         'Password has been reset!',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF2d5f3f)),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2d5f3f),
+                        ),
                       ),
                       const SizedBox(height: 10),
                       const Text('You may now log in with your new password.'),
                       const SizedBox(height: 30),
                       ElevatedButton.icon(
-                        icon: Icon(Icons.login, color: Colors.white),
+                        icon: const Icon(Icons.login, color: Colors.white),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF13b464),
                           foregroundColor: Colors.white,
@@ -121,7 +185,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       );
     }
 
-    if (widget.token == null || widget.token!.isEmpty) {
+    // Invalid/missing token screen
+    if (_token == null || _token!.isEmpty) {
       return Scaffold(
         body: Container(
           decoration: const BoxDecoration(
@@ -130,17 +195,56 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          child: Center(
-            child: Card(
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Text(
-                  "Invalid or missing reset link.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.red[700],
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.8),
+                  Colors.grey[900]!.withOpacity(0.7),
+                  Colors.black.withOpacity(0.6),
+                ],
+              ),
+            ),
+            child: Center(
+              child: Card(
+                elevation: 12,
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red[700], size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Invalid or missing reset link.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.red[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Please use the link from your email or request a new password reset.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () => context.go('/login'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2d5f3f),
+                        ),
+                        child: const Text('Back to Login'),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -150,6 +254,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       );
     }
 
+    // Main reset password form
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -188,6 +293,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          // Logo
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -232,6 +338,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
+                          
+                          // Title
                           const Text(
                             'Reset Your Password',
                             style: TextStyle(
@@ -247,11 +355,31 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                           const SizedBox(height: 32),
 
+                          // Error message
                           if (_errorMessage.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10.0),
-                              child: Text(_errorMessage, style: const TextStyle(color: Colors.red)),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.red[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.red),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.error_outline, color: Colors.red),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage,
+                                      style: const TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+
+                          // New Password field
                           TextFormField(
                             obscureText: _obscurePassword,
                             decoration: InputDecoration(
@@ -268,7 +396,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 ),
                               ),
                               suffixIcon: IconButton(
-                                icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                ),
                                 onPressed: () {
                                   setState(() {
                                     _obscurePassword = !_obscurePassword;
@@ -282,6 +414,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             onChanged: (val) => _password = val,
                           ),
                           const SizedBox(height: 16),
+
+                          // Confirm Password field
                           TextFormField(
                             obscureText: _obscureConfirm,
                             decoration: InputDecoration(
@@ -298,7 +432,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 ),
                               ),
                               suffixIcon: IconButton(
-                                icon: Icon(_obscureConfirm ? Icons.visibility : Icons.visibility_off),
+                                icon: Icon(
+                                  _obscureConfirm
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                ),
                                 onPressed: () {
                                   setState(() {
                                     _obscureConfirm = !_obscureConfirm;
@@ -306,11 +444,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 },
                               ),
                             ),
-                            validator: (val) => val != _password ? 'Passwords do not match' : null,
+                            validator: (val) =>
+                                val != _password ? 'Passwords do not match' : null,
                             onChanged: (val) => _confirmPassword = val,
                           ),
                           const SizedBox(height: 32),
 
+                          // Submit button
                           SizedBox(
                             width: double.infinity,
                             height: 48,

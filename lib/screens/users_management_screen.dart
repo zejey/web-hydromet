@@ -672,43 +672,43 @@ class _UsersScreenState extends State<UsersScreen> {
   TextInputFormatter get _nameInputFormatter {
     return FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZñÑ\s\-]'));
   }
-
-  void _exportUsers(String format) {
-    String message;
-    switch (format) {
-      case 'xlsx':
-        message = 'Users exported as XLSX file successfully!';
-        break;
-      case 'pdf':
-        message = 'Users exported as PDF file successfully!';
-        break;
-      case 'xml':
-        message = 'Users exported as XML file successfully!';
-        break;
-      default:
-        message = 'Export completed!';
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              format == 'xlsx'
-                  ? Icons.table_chart
-                  : format == 'pdf'
-                  ? Icons.picture_as_pdf
-                  : Icons.code,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 8),
-            Text(message),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
+  // Ongoing POC 
+ // void _exportUsers(String format) {
+  //   String message;
+  //   switch (format) {
+  //     case 'xlsx':
+  //       message = 'Users exported as XLSX file successfully!';
+  //       break;
+  //     case 'pdf':
+  //       message = 'Users exported as PDF file successfully!';
+  //       break;
+  //     case 'xml':
+  //       message = 'Users exported as XML file successfully!';
+  //       break;
+  //     default:
+  //       message = 'Export completed!';
+  //   }
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Row(
+  //         children: [
+  //           Icon(
+  //             format == 'xlsx'
+  //                 ? Icons.table_chart
+  //                 : format == 'pdf'
+  //                 ? Icons.picture_as_pdf
+  //                 : Icons.code,
+  //             color: Colors.white,
+  //           ),
+  //           const SizedBox(width: 8),
+  //           Text(message),
+  //         ],
+  //       ),
+  //       backgroundColor: Colors.green,
+  //       duration: const Duration(seconds: 3),
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
@@ -867,99 +867,99 @@ class _UsersScreenState extends State<UsersScreen> {
                           SizedBox(
                             width: 170,
                             height: 48,
-                            child: PopupMenuButton<String>(
-                              onSelected: (String format) =>
-                                  _exportUsers(format),
-                              tooltip: 'Export Users',
-                              itemBuilder: (BuildContext context) => [
-                                const PopupMenuItem<String>(
-                                  value: 'xlsx',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.table_chart,
-                                        color: Colors.green,
-                                        size: 18,
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text('Export as XLSX'),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem<String>(
-                                  value: 'pdf',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.picture_as_pdf,
-                                        color: Colors.red,
-                                        size: 18,
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text('Export as PDF'),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem<String>(
-                                  value: 'xml',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.code,
-                                        color: Colors.orange,
-                                        size: 18,
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text('Export as XML'),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              child: Container(
-                                width: double.infinity,
-                                height: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 0,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(4),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.blue.withOpacity(0.3),
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    const Icon(
-                                      Icons.download,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'Export Users',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.arrow_drop_down,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            // child: PopupMenuButton<String>(
+                            //   onSelected: (String format) =>
+                            //       _exportUsers(format),
+                            //   tooltip: 'Export Users',
+                            //   itemBuilder: (BuildContext context) => [
+                            //     const PopupMenuItem<String>(
+                            //       value: 'xlsx',
+                            //       child: Row(
+                            //         children: [
+                            //           Icon(
+                            //             Icons.table_chart,
+                            //             color: Colors.green,
+                            //             size: 18,
+                            //           ),
+                            //           SizedBox(width: 12),
+                            //           Text('Export as XLSX'),
+                            //         ],
+                            //       ),
+                            //     ),
+                            //     const PopupMenuItem<String>(
+                            //       value: 'pdf',
+                            //       child: Row(
+                            //         children: [
+                            //           Icon(
+                            //             Icons.picture_as_pdf,
+                            //             color: Colors.red,
+                            //             size: 18,
+                            //           ),
+                            //           SizedBox(width: 12),
+                            //           Text('Export as PDF'),
+                            //         ],
+                            //       ),
+                            //     ),
+                            //     const PopupMenuItem<String>(
+                            //       value: 'xml',
+                            //       child: Row(
+                            //         children: [
+                            //           Icon(
+                            //             Icons.code,
+                            //             color: Colors.orange,
+                            //             size: 18,
+                            //           ),
+                            //           SizedBox(width: 12),
+                            //           Text('Export as XML'),
+                            //         ],
+                            //       ),
+                            //     ),
+                            //   ],
+                            //   child: Container(
+                            //     width: double.infinity,
+                            //     height: double.infinity,
+                            //     padding: const EdgeInsets.symmetric(
+                            //       horizontal: 16,
+                            //       vertical: 0,
+                            //     ),
+                            //     decoration: BoxDecoration(
+                            //       color: Colors.blue,
+                            //       borderRadius: BorderRadius.circular(4),
+                            //       boxShadow: [
+                            //         BoxShadow(
+                            //           color: Colors.blue.withOpacity(0.3),
+                            //           blurRadius: 2,
+                            //           offset: const Offset(0, 2),
+                            //         ),
+                            //       ],
+                            //     ),
+                            //     child: Row(
+                            //       mainAxisAlignment: MainAxisAlignment.center,
+                            //       mainAxisSize: MainAxisSize.max,
+                            //       children: [
+                            //         const Icon(
+                            //           Icons.download,
+                            //           color: Colors.white,
+                            //           size: 18,
+                            //         ),
+                            //         const SizedBox(width: 8),
+                            //         const Text(
+                            //           'Export Users',
+                            //           style: TextStyle(
+                            //             color: Colors.white,
+                            //             fontWeight: FontWeight.w500,
+                            //           ),
+                            //         ),
+                            //         const SizedBox(width: 4),
+                            //         const Icon(
+                            //           Icons.arrow_drop_down,
+                            //           color: Colors.white,
+                            //           size: 16,
+                            //         ),
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
                           ),
                           const SizedBox(width: 12),
                           SizedBox(

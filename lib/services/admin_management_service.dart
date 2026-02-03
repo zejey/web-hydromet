@@ -48,6 +48,51 @@ class AdminManagementService {
     }
   }
 
+  /// Invite a new admin (uses /api/admin-invites/invite)
+  /// Returns the parsed response map (contains invite object with token when available)
+  Future<Map<String, dynamic>> inviteAdmin(Map<String, dynamic> inviteData) async {
+    try {
+      final requestBody = {
+        'email': inviteData['email'] ?? '',
+        'role': inviteData['role'] ?? 'admin',
+        'invited_by': inviteData['invited_by'] ?? 'system',
+      };
+
+      print('Sending POST request to: $baseUrl/admin-invites/invite');
+      print('Request body: ${json.encode(requestBody)}');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/admin-invites/invite'),
+        headers: _headers,
+        body: json.encode(requestBody),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return data;
+      } else {
+        // try to parse error message
+        String errorMessage = 'Failed to send invite: ${response.statusCode}';
+        try {
+          final errorData = json.decode(response.body);
+          if (errorData['detail'] != null) {
+            errorMessage = errorData['detail'].toString();
+          } else if (errorData['message'] != null) {
+            errorMessage = errorData['message'].toString();
+          }
+        } catch (_) {
+          errorMessage = 'Failed to send invite: ${response.statusCode} - ${response.body}';
+        }
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      throw Exception('Error sending invite: $e');
+    }
+  }
+
   /// Add a new admin
   Future<void> addAdmin(Map<String, dynamic> adminData) async {
     try {
@@ -154,6 +199,42 @@ class AdminManagementService {
       }
     } catch (e) {
       throw Exception('Error getting admin: $e');
+    }
+  }
+  /// Complete the invite by setting the admin password.
+  /// Expects a token (from invite) and the chosen password.
+  Future<void> setPassword(String token, String password) async {
+    try {
+      final requestBody = {
+        'token': token,
+        'password': password,
+      };
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/admin-invites/set-password'),
+        headers: _headers,
+        body: json.encode(requestBody),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // success
+        return;
+      } else {
+        String errorMessage = 'Failed to set password: ${response.statusCode}';
+        try {
+          final errorData = json.decode(response.body);
+          if (errorData['detail'] != null) {
+            errorMessage = errorData['detail'].toString();
+          } else if (errorData['message'] != null) {
+            errorMessage = errorData['message'].toString();
+          }
+        } catch (_) {
+          errorMessage = 'Failed to set password: ${response.statusCode} - ${response.body}';
+        }
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      throw Exception('Error setting password: $e');
     }
   }
 }

@@ -21,6 +21,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _roleController = TextEditingController();
+  final _inviteEmailController = TextEditingController(); // new for invite
   String _selectedRole = 'admin';
   String? _editingAdminId;
 
@@ -312,6 +313,124 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
     _clearForm();
   }
 
+  void _showInviteAdminDialog() {
+    _inviteEmailController.clear();
+    String inviteRole = 'admin';
+    String? emailError;
+    bool showAllErrors = false;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setDialogState) {
+          void validate() {
+            setDialogState(() {
+              emailError = null;
+              if (_inviteEmailController.text.trim().isEmpty) {
+                emailError = 'Email is required';
+              } else if (!_inviteEmailController.text.contains('@')) {
+                emailError = 'Invalid email';
+              }
+            });
+          }
+
+          return AlertDialog(
+            title: const Text('Invite New Admin'),
+            content: SizedBox(
+              width: 400,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _inviteEmailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email *',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.email),
+                      errorText: (showAllErrors || _inviteEmailController.text.isNotEmpty)
+                          ? emailError
+                          : null,
+                    ),
+                    onChanged: (_) => validate(),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: inviteRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Role',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.work),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'superadmin', child: Text('Superadmin')),
+                      DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                    ],
+                    onChanged: (value) {
+                      setDialogState(() {
+                        inviteRole = value ?? 'admin';
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+              ElevatedButton(
+                onPressed: () async {
+                  setDialogState(() => showAllErrors = true);
+                  validate();
+                  if (emailError == null) {
+                    try {
+                      await _adminService.inviteAdmin({
+                        'email': _inviteEmailController.text.trim(),
+                        'role': inviteRole,
+                        'invited_by': widget.role,
+                      });
+
+                      Navigator.of(context).pop();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Icon(Icons.check_circle, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '✅ Invite sent.',
+                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: Colors.green,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+
+                      // refresh list (optional)
+                      await _fetchAdmins();
+                    } catch (e) {
+                      setDialogState(() {
+                        emailError = e.toString();
+                      });
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2d5f3f),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Send Invite'),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
   void _showDeleteConfirmation(Map<String, dynamic> admin) {
     showDialog(
       context: context,
@@ -358,44 +477,45 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
     _editingAdminId = null;
   }
 
-  void _exportAdmins(String format) {
-    String message;
-    switch (format) {
-      case 'xlsx':
-        message = 'Admins exported as XLSX file successfully!';
-        break;
-      case 'pdf':
-        message = 'Admins exported as PDF file successfully!';
-        break;
-      default:
-        message = 'Export completed!';
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              format == 'xlsx'
-                  ? Icons.table_chart
-                  : format == 'pdf'
-                  ? Icons.picture_as_pdf
-                  : Icons.code,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 8),
-            Text(message),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
+  // void _exportAdmins(String format) {
+  //   String message;
+  //   switch (format) {
+  //     case 'xlsx':
+  //       message = 'Admins exported as XLSX file successfully!';
+  //       break;
+  //     case 'pdf':
+  //       message = 'Admins exported as PDF file successfully!';
+  //       break;
+  //     default:
+  //       message = 'Export completed!';
+  //   }
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Row(
+  //         children: [
+  //           Icon(
+  //             format == 'xlsx'
+  //                 ? Icons.table_chart
+  //                 : format == 'pdf'
+  //                 ? Icons.picture_as_pdf
+  //                 : Icons.code,
+  //             color: Colors.white,
+  //           ),
+  //           const SizedBox(width: 8),
+  //           Text(message),
+  //         ],
+  //       ),
+  //       backgroundColor: Colors.green,
+  //       duration: const Duration(seconds: 2),
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _inviteEmailController.dispose();
     super.dispose();
   }
 
@@ -530,81 +650,81 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: PopupMenuButton<String>(
-                        onSelected: (String format) => _exportAdmins(format),
-                        tooltip: 'Export Admins',
-                        itemBuilder: (BuildContext context) => [
-                          const PopupMenuItem<String>(
-                            value: 'xlsx',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.table_chart,
-                                  color: Colors.green,
-                                  size: 18,
-                                ),
-                                SizedBox(width: 12),
-                                Text('Export as XLSX'),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'pdf',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.picture_as_pdf,
-                                  color: Colors.red,
-                                  size: 18,
-                                ),
-                                SizedBox(width: 12),
-                                Text('Export as PDF'),
-                              ],
-                            ),
-                          ),
-                        ],
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(4),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue.withOpacity(0.3),
-                                blurRadius: 2,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.download,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Export Admins',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.arrow_drop_down,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // child: PopupMenuButton<String>(
+                      //   onSelected: (String format) => _exportAdmins(format),
+                      //   tooltip: 'Export Admins',
+                      //   itemBuilder: (BuildContext context) => [
+                      //     const PopupMenuItem<String>(
+                      //       value: 'xlsx',
+                      //       child: Row(
+                      //         children: [
+                      //           Icon(
+                      //             Icons.table_chart,
+                      //             color: Colors.green,
+                      //             size: 18,
+                      //           ),
+                      //           SizedBox(width: 12),
+                      //           Text('Export as XLSX'),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //     const PopupMenuItem<String>(
+                      //       value: 'pdf',
+                      //       child: Row(
+                      //         children: [
+                      //           Icon(
+                      //             Icons.picture_as_pdf,
+                      //             color: Colors.red,
+                      //             size: 18,
+                      //           ),
+                      //           SizedBox(width: 12),
+                      //           Text('Export as PDF'),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ],
+                      //   child: Container(
+                      //     padding: const EdgeInsets.symmetric(
+                      //       horizontal: 16,
+                      //       vertical: 12,
+                      //     ),
+                      //     decoration: BoxDecoration(
+                      //       color: Colors.blue,
+                      //       borderRadius: BorderRadius.circular(4),
+                      //       boxShadow: [
+                      //         BoxShadow(
+                      //           color: Colors.blue.withOpacity(0.3),
+                      //           blurRadius: 2,
+                      //           offset: const Offset(0, 2),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //     child: const Row(
+                      //       mainAxisSize: MainAxisSize.min,
+                      //       children: [
+                      //         Icon(
+                      //           Icons.download,
+                      //           color: Colors.white,
+                      //           size: 18,
+                      //         ),
+                      //         SizedBox(width: 8),
+                      //         Text(
+                      //           'Export Admins',
+                      //           style: TextStyle(
+                      //             color: Colors.white,
+                      //             fontWeight: FontWeight.w500,
+                      //           ),
+                      //         ),
+                      //         SizedBox(width: 4),
+                      //         Icon(
+                      //           Icons.arrow_drop_down,
+                      //           color: Colors.white,
+                      //           size: 16,
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
                     ),
                     const SizedBox(width: 12),
                     Container(
@@ -612,7 +732,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: InkWell(
-                        onTap: _showAddAdminDialog,
+                        onTap: _showInviteAdminDialog, // now opens invite dialog
                         borderRadius: BorderRadius.circular(4),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -640,7 +760,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                               ),
                               SizedBox(width: 8),
                               Text(
-                                'Add Admin',
+                                'Invite Admin',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w500,
