@@ -246,16 +246,6 @@ class EmergencyHotlinesPanel extends StatelessWidget {
                 decoration: const InputDecoration(labelText: 'Priority'),
                 keyboardType: TextInputType.number,
               ),
-              TextField(
-                controller: iconTypeController,
-                decoration: const InputDecoration(labelText: 'Icon Type'),
-              ),
-              TextField(
-                controller: iconColorController,
-                decoration: const InputDecoration(
-                  labelText: 'Icon Color (hex)',
-                ),
-              ),
               ValueListenableBuilder(
                 valueListenable: isActive,
                 builder: (context, value, _) => SwitchListTile(
